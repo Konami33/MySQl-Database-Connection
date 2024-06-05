@@ -206,7 +206,7 @@ This documentation demonstrates how to create a Flask REST API that connects to 
         volumes:
           - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
         ports:
-          - "3307:3306"
+          - "3306:3306"
 
       web:
         build: .
@@ -271,9 +271,9 @@ We should see the version of Docker Compose printed to the terminal.
 
 After installing Docker Compose, we should be able to use it to manage our Docker containers. We can run the `docker-compose up --build` command again, and Docker Compose will build and start our containers according to the instructions in your `docker-compose.yml` file.
 
-    ```bash
-    docker-compose up --build
-    ```
+```bash
+docker-compose up --build
+```
 #### Verify the Connection
 
 ```bash
@@ -353,19 +353,18 @@ Replace `user_id` with the ID of the user you want to retrieve.
 
 4. To delete a user by their ID using the `DELETE` method, you can use the following **`curl`** command:
 
-    ```bash
-    curl -X DELETE http://localhost:5000/users/<user_id>
-    ```
+```bash
+curl -X DELETE http://localhost:5000/users/<user_id>
+```
 
 Replace **`<user_id>`** with the actual ID of the user you want to delete. For example, For example, if you want to delete a user with ID **`1`**, the command would be:
 
-    ```bash
-    curl -X DELETE http://localhost:5000/users/1
-    ```
+```bash
+curl -X DELETE http://localhost:5000/users/1
+```
 ![](./images/8.png)
-    ```
 
-We can also see taht all api end points are running:
+We can also see that all api end points are running:
 
 ![](./images/18.png)
 
