@@ -387,13 +387,14 @@ Replace `user_id` with the ID of the user you want to retrieve.
     ```sh
     curl -X POST -H "Content-Type: application/json" -d '{"name": "John Doe", "email": "john@example.com"}' http://localhost:5000/users
     ```
+4. **We can see the updated `users` table by:**
 
-We can see that all api end points are running:
+    ![](./images/10.png)
 
 ### Step 8: Test Persistence
 Let's test persistence by stopping and starting the containers again.
 
-1. **Add some data** to your MySQL database.
+1. **Add some data** to the MySQL database.
    
    ```sql
    INSERT INTO users (name, email) VALUES ('yasin', 'yasin@example.com');
