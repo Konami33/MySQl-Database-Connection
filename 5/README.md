@@ -2,6 +2,8 @@
 
 This documentation demonstrates how to create a Flask REST API that connects to a MySQL database running in a Docker container using a new MySQL user.
 
+![](./images/20.png)
+
 ## Step 1: Set Up Flask REST API
 
 1. **Create a project directory**

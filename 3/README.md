@@ -148,7 +148,7 @@ This documentation demonstrates how to create a Flask REST API that connects to 
     ```
 
 
-## Step 2: Set Up MySQL
+<!-- ## Step 2: Set Up MySQL
 
 1. **Create a database initialization script**
 
@@ -162,9 +162,9 @@ This documentation demonstrates how to create a Flask REST API that connects to 
         name VARCHAR(50) NOT NULL,
         email VARCHAR(50) NOT NULL
     );
-    ```
+    ``` -->
 
-## Step 3: Set Up Docker
+## Step 2: Set Up Docker
 
 1. **Create a `Dockerfile` for the Flask application**
     ```Dockerfile
