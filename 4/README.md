@@ -1,4 +1,3 @@
-Sure! Below is the complete guide, including the steps to test the MySQL server using `telnet` and verifying the MySQL database setup.
 
 # Flask REST API with SQLAlchemy, MySQL, and Docker
 
