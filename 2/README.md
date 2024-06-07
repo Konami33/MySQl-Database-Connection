@@ -26,6 +26,7 @@ The provided setup includes:
 
 6. **Testing**: Test the Flask application endpoints by accessing them via the exposed NodePort, and perform CRUD operations on user data using `curl` commands.
 
+![](./image/image.png)
 
 ## Step 1: Create Flask app
 

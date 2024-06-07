@@ -8,6 +8,8 @@ In this documentation we will
     - Then test the MySQL server using MySQL client
 - Create a new user
 
+![](./image/image.png)
+
 ## Step 1: Create Kubernetes YAML files for deployment and service configuration for MySQL.
 
 1. **Create a directory for Kubernetes manifests(Optional)**
