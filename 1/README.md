@@ -1,4 +1,12 @@
-# Deploy flask rest api into Kubernetes
+# Deploy MySQL into Kubernetes and access it from a Ubuntu container
+
+In this documentation we will
+- Deploy MySQL server in kubernetes using Persistent Volume.
+- Deploy an Ubuntu container
+- Access MySQl server from the ubuntu container.
+    - First Test the MySQL server using telnet
+    - Then test the MySQL server using MySQL client
+- Create a new user
 
 ## Step 1: Create Kubernetes YAML files for deployment and service configuration for MySQL.
 
