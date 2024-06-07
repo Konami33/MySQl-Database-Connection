@@ -184,8 +184,8 @@ In this documentation we will
    If the telnet client is not installed on your Ubuntu system, you can install it using the following command:
 
    ```sh
-   sudo apt-get update
-   sudo apt-get install telnet
+   apt-get update
+   apt-get install telnet
    ```
 
 - **Telnet to MySQL Server**:

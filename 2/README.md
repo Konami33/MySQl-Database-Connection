@@ -1,3 +1,4 @@
+# Connect Flask and MySQL
 
 ## Step 1: Create Kubernetes YAML files for deployment and service configuration for MySQL.
 
@@ -230,4 +231,4 @@ Use `curl` to test the API endpoints:
   curl -X DELETE http://<NodeIP>:30007/users/1
   ```
 
-Thats it!. By these steps, we have deployed our Flask application with MySQL to kubernetes.
+Thats it!. By following these steps, we have deployed our Flask application with MySQL to kubernetes. In the next lab we will automate the database creation.

@@ -1,0 +1,1 @@
+# Automate the database creation using init_db
