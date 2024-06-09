@@ -1,8 +1,20 @@
 # Launching Mysql and Flask application on EC2 instance from two different public subnet
 
+This documentation outlines the process to set up a VPC with two public subnets, corresponding route tables, and a network gateway. Further we launch the Mysql and Flask application on EC2 instance from two different public subnets.
+
+## Scenario
+
 ![alt text](./images/Public-two.jpeg)
 
-This documentation outlines the process to set up a VPC with two public subnets, corresponding route tables, and a network gateway. Further we launch the Mysql and Flask application on EC2 instance from two different public subnets.
+You are tasked with deploying a web application that uses Flask as the backend and MySQL as the database. To achieve this, you will create a Virtual Private Cloud (VPC) in AWS to ensure network isolation and security. Within this VPC, you will set up two public subnets: one for the Flask application and another for the MySQL database.
+
+Each subnet will host an EC2 instance:
+- The first instance will run the MySQL database, also containerized using Docker.
+- The second instance will run the Flask application, containerized using Docker.
+
+
+This architecture ensures that the application and database are isolated yet can communicate securely within the VPC. After setting up the instances and deploying the Docker containers, you will verify the connectivity between the instances to ensure seamless interaction between the Flask application and the MySQL database.
+
 
 ## Step-by-Step Guide to Create a VPC
 
@@ -168,3 +180,221 @@ You have now successfully created a VPC with the following components:
 - You have successfully launched two Ubuntu EC2 instances in your VPC:
     - `public-instance-1` in `public-subnet-1` with a public IP address.
     - `public-instance-2` in `public-subnet-2` with a public IP address.
+
+
+## Flask Application Launch on EC2 Instance-2
+
+### 1. Set Up the Flask Application
+
+Create a new directory for your project and navigate into it:
+
+```sh
+mkdir flask_mysql_docker
+cd flask_mysql_docker
+```
+
+Create a file named app.py and add the following code:
+
+```python
+from flask import Flask, jsonify, request
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://newuser:newpass@10.0.2.141/test_db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(50), nullable=False)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email
+        }
+
+@app.route('/')
+def index():
+    return jsonify(message="Connected to MySQL database")
+
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    return jsonify([user.serialize() for user in users])
+
+@app.route('/users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    user = User.query.get(user_id)
+    if user:
+        return jsonify(user.serialize())
+    else:
+        return jsonify({"error": "User not found"}), 404
+
+@app.route('/users', methods=['POST'])
+def add_user():
+    new_user_data = request.get_json()
+    new_user = User(name=new_user_data['name'], email=new_user_data['email'])
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"id": new_user.id}), 201
+
+@app.route('/users/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    update_data = request.get_json()
+    user.name = update_data['name']
+    user.email = update_data['email']
+    db.session.commit()
+    return jsonify({"message": "User updated successfully"})
+
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({"message": "User deleted successfully"})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0')
+```
+
+
+### 2. Create the Dockerfile
+
+Create a file named Dockerfile and add the following content:
+
+```Dockerfile
+FROM python:3.8-slim-buster
+
+WORKDIR /app
+
+COPY . /app
+
+RUN pip install --no-cache-dir Flask Flask-SQLAlchemy mysql-connector-python
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]
+```
+
+
+### 3. Create the Docker Compose File
+
+Create a file named docker-compose.yml and add the following content:
+
+```yaml
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: python app.py
+    volumes:
+      - .:/app
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_APP: app.py
+      FLASK_RUN_HOST: 0.0.0.0
+      DATABASE_URL: mysql+mysqlconnector://newuser:newpass@10.0.2.141/test_db
+```
+
+### 4. Build and Run the Docker Container
+
+Ensure Docker and Docker Compose are installed on your EC2 instance. Then run the following commands:
+
+```sh
+docker-compose build
+docker-compose up
+```
+
+This will build the Docker image and run the Flask application on port 5000.
+
+### 5. Obtain the IP Addresses
+
+1. *Public IPs*: You can find the public IPs of both instances from the AWS Management Console under the EC2 Dashboard.
+2. *Private IPs*: Similarly, the private IPs can be found in the same section.
+
+### 6: Ping the Instances
+
+#### From the MySQL Instance
+
+1. *Ping the Flask Instance (Public IP)*:
+    ```sh
+    ping <Flask_Instance_Public_IP>
+    ```
+
+![alt text](./images/public-ping.PNG)
+    
+
+2. *Ping the Flask Instance (Private IP)*:
+    ```sh
+    ping <Flask_Instance_Private_IP>
+    ```
+
+![alt text](./images/private-ping.PNG)
+    
+
+#### From the Flask Instance
+
+1. *Ping the MySQL Instance (Public IP)*:
+    ```sh
+    ping <MySQL_Instance_Public_IP>
+    ```
+
+2. *Ping the MySQL Instance (Private IP)*:
+    ```sh
+    ping <MySQL_Instance_Private_IP>
+    ```
+
+![alt text](./images/final3.png)
+
+### 6. Testing the API
+
+1. **Check if the Flask API is running**:
+
+   ```sh
+   curl http://localhost:5000
+   ```
+
+2. **Add a user**:
+
+   ```sh
+   curl -X POST -H "Content-Type: application/json" -d '{"name": "Fazlul Karim", "email": "fazlulkarim@gmail.com"}' http://localhost:5000/users
+   ```
+
+3. **Get all users**:
+
+   ```sh
+   curl http://localhost:5000/users
+   ```
+
+4. **Get user by ID**:
+
+   ```sh
+   curl http://localhost:5000/users/1
+   ```
+
+5. **Update a user**:
+
+   ```sh
+   curl -X PUT -H "Content-Type: application/json" -d '{"name": "Fazlul", "email": "fazlulkarim362@gmail.com"}' http://localhost:5000/users/1
+   ```
+
+6. **Delete a user**:
+
+   ```sh
+   curl -X DELETE http://localhost:5000/users/1
+   ```
+
+   Expected Output:
+    ![alt text](./images/final-1.png)
