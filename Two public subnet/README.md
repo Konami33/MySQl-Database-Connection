@@ -197,7 +197,7 @@ You have now successfully created a VPC with the following components:
 
 ### Step 1: Update the package list and install Docker
 
-    Install and set up the docker in ubuntu EC2 instance.
+Install and set up the docker in ubuntu EC2 instance.
 
 
 ### Step 2: Create a database initialization script (init_db.sql)
