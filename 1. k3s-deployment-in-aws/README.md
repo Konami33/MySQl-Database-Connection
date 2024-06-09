@@ -21,6 +21,77 @@ In this lab, we will deploy a k3s kubernetes cluster on aws EC2.
 
 Amazon Elastic Compute Cloud (EC2) is a service that provides scalable computing capacity in the cloud. It allows users to rent virtual computers on which to run their own applications. EC2 instances are like virtual servers that can run different operating systems, depending on your preference.
 
+## Setting Up the VPC
+<details>
+  <summary>Click to expand</summary>
+
+# AWS VPC and EC2 Setup Documentation
+
+### Step 1: Create Your VPC
+1. **Open the AWS Management Console** and search for "VPC" in the search bar.
+2. On the left-hand side, click on "Your VPCs".
+3. Click on "Create VPC" at the top right corner.
+
+   ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/create-vpc.jpeg)
+
+4. Name your VPC using a tag.
+5. Set the IPv4 CIDR block to `10.0.0.0/16`.
+
+   Congratulations on creating your first VPC!
+
+### Step 2: Create a Public Subnet
+1. After creating your VPC, click on "Subnets" on the left-hand side.
+2. Click on "Create Subnet".
+
+   <!-- ![Create Subnet](image) -->
+   ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/Create-subnet.jpeg)
+
+3. Designate the VPC you just created.
+4. Assign a CIDR block within your VPC’s range (e.g., `10.0.1.0/24`).
+5. Click on the created subnet and then "Edit subnet settings".
+6. Enable "Auto-assign public IPv4 address" and save.
+
+   <!-- ![Enable Auto-assign IPv4](image) -->
+   ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/edit-subnet-settings.jpeg)
+
+### Step 3: Create and Attach an Internet Gateway
+1. Click on "Internet Gateways" on the left-hand side.
+2. Click "Create internet gateway".
+
+   <!-- ![Create Internet Gateway](image) -->
+   ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/create-internet-gateway.jpeg)
+
+3. Once created, click "Actions" and then "Attach to VPC".
+4. Select your VPC and attach the Internet Gateway.
+
+   ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/Attach-to-VPC.jpeg)
+
+### Step 4: Create Route Tables
+1. Click on "Route Tables" on the left-hand side.
+2. Click "Create route table".
+
+   <!-- ![Create Route Table](image) -->
+   ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/Create-route-table.jpeg)
+
+3. Associate the new route table with your VPC.
+4. Add a route to allow internet traffic by specifying the destination `0.0.0.0/0` and target as your Internet Gateway.
+
+   <!-- ![Add Route](image) -->
+   ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/Edit-routes.jpeg)
+
+5. Click on the "Subnet Associations" tab, then "Edit Subnet Associations".
+6. Select your public subnet and save.
+
+   <!-- ![Associate Subnet](image) -->
+   ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/edit-subnet-associations.jpeg)
+
+### Resource Map:
+
+![](./image/14.png)
+
+Now we have our vpc setup.
+</details>
+
 ## Setting Up the EC2 Instance
 
 ### Choosing an OS Distribution
@@ -42,7 +113,7 @@ Review your settings and launch the instance. Once the instance is running, note
 
 ## Allocating and Associating an Elastic IP
 
-Elastic IPs are static IP addresses designed for dynamic cloud computing. They allow your instance to maintain the same IP address even after it is stopped and started.
+`Elastic IPs` are static IP addresses designed for dynamic cloud computing. They allow your instance to maintain the `same IP address` even after it is stopped and started.
 
 1. **Allocate an Elastic IP**:
     - Navigate to the Elastic IPs section in the EC2 dashboard.
@@ -52,6 +123,8 @@ Elastic IPs are static IP addresses designed for dynamic cloud computing. They a
     - Select the newly created Elastic IP.
     - Click "Actions" > "Associate Elastic IP address".
     - Choose your instance and private IP address to associate.
+
+![](./image/1.png)
 
 ## Accessing the EC2 Instance via SSH
 
@@ -85,6 +158,7 @@ K3s is a lightweight Kubernetes distribution designed for resource-constrained e
     ```sh
     curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644
     ```
+![](./image/2.png)
 
 2. **Verify the Installation**:
 
@@ -93,8 +167,13 @@ K3s is a lightweight Kubernetes distribution designed for resource-constrained e
     # Or
     kubectl cluster-info
     ```
+![](./image/3.png)
 
-## Dockerizing Your Application
+So we have installed k3s on AWS EC2.
+
+## Exaple task: Deploy a nginx web server on k3s kubenetes destribution.
+
+<!-- ## Dockerizing Your Application
 
 Docker is a platform for developing, shipping, and running applications inside containers.
 
@@ -148,7 +227,7 @@ Docker is a platform for developing, shipping, and running applications inside c
 
 3. **Update Security Group**: Ensure port 3000 is open in your security group settings.
 
-4. **Access Application**: Open the application in your browser using `http://your_elastic_ip:3000/`.
+4. **Access Application**: Open the application in your browser using `http://your_elastic_ip:3000/`. -->
 
 <!-- ## Pushing the Docker Image to DockerHub
 
@@ -168,7 +247,7 @@ DockerHub is a cloud-based registry service that allows you to link to code repo
 
 ## Creating a K3s Kubernetes Cluster
 
-To run your application on K3s, you need to create Kubernetes deployment and service files.
+To run an application on K3s, you need to create Kubernetes deployment and service files.
 
 ### Create Kubernetes Deployment File
 
@@ -178,83 +257,104 @@ To run your application on K3s, you need to create Kubernetes deployment and ser
     vi k3s-app.yml
     ```
 
-2. **Add the following content**:
+2. Add the following content:
 
-    ```yaml
-    apiVersion: apps/v1
-    kind: Deployment
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k3s-app
+  labels:
+    app: k3s-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k3s-app
+  template:
     metadata:
-      name: k3s-app
       labels:
         app: k3s-app
     spec:
-      replicas: 1
-      selector:
-        matchLabels:
-          app: k3s-app
-      template:
-        metadata:
-          labels:
-            app: k3s-app
-        spec:
-          containers:
-            - name: k3s-app
-              image: nginx:latest
-              imagePullPolicy: Always
-              ports:
-                - containerPort: 80
-    ---
-    apiVersion: v1
-    kind: Service
-    metadata:
-      labels:
-        app: k3s-app-service
-      name: k3s-app-service
-    spec:
-      ports:
-        - name: "3000-80"
-          port: 3000
-          protocol: TCP
-          targetPort: 80
-      selector:
-        app: k3s-app
-      sessionAffinity: None
-      type: ClusterIP
-    status:
-      loadBalancer: {}
-    ---
-    apiVersion: networking.k8s.io/v1
-    kind: Ingress
-    metadata:
-      name: k3s-app-ingress
-      annotations:
-        ingress.kubernetes.io/ssl-redirect: "false"
-    spec:
-      rules:
-        - http:
-            paths:
-              - path: /
-                pathType: Prefix
-                backend:
-                  service:
-                    name: k3s-app-service
-                    port:
-                      number: 3000
-    ```
+      containers:
+        - name: k3s-app
+          image: nginx:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: k3s-app-service
+  name: k3s-app-service
+spec:
+  ports:
+    - name: "3000-80"
+      port: 3000
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: k3s-app
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: k3s-app-ingress
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: k3s-app-service
+                port:
+                  number: 3000
+```
 
-### Apply the Kubernetes Configuration
+### Explanation
 
-1. **Deploy to Kubernetes**:
+1. **Deployment**:
+   - The `Deployment` named `k3s-app` is updated to use the `nginx:latest` image.
+   - It will create a single replica (`replicas: 1`) of the Nginx container.
 
-    ```sh
-    kubectl apply -f k3s-app.yml
-    ```
+2. **Service**:
+   - The `Service` named `k3s-app-service` is set to expose port 3000 and maps it to port 80 of the Nginx container.
+   - It uses a `ClusterIP` type service to expose the application internally within the cluster.
 
-2. **Verify Deployment**:
+3. **Ingress**:
+   - The `Ingress` named `k3s-app-ingress` is configured to route HTTP traffic to the `k3s-app-service` on port 3000.
+   - The annotation `ingress.kubernetes.io/ssl-redirect: "false"` indicates that SSL redirection is disabled.
 
-    ```sh
-    kubectl get pods
-    ```
+### Applying the Manifest
+
+Save this configuration to a file named `nginx-deployment.yaml` and apply it using the following command:
+
+```sh
+kubectl apply -f nginx-deployment.yaml
+```
+
+### Verify the Deployment
+
+To check if the deployment, service, and ingress are created successfully, you can use the following commands:
+
+```sh
+kubectl get deployments
+kubectl get services
+kubectl get ingress
+```
+
+![](./image/9.png)
+
 
 ## Deploying Your Application
 
@@ -263,6 +363,10 @@ To test the deployment, open your EC2 Elastic IP address in your browser. For ex
 ```sh
 http://your_elastic_ip/
 ```
+
+In our case `elastic_ip` is `3.231.129.241`
+
+![](./image/13.png)
 
 You should see your application running, indicating that the deployment was successful.
 
