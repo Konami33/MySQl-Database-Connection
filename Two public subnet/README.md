@@ -540,3 +540,19 @@ This will build the Docker image and run the Flask application on port 5000.
 Expected Output:
 
 ![alt text](./images/final.png)
+
+## Issues
+
+Launching a MySQL database in a public subnet on an EC2 instance involves several considerations and potential issues related to security, accessibility, and performance. Here are some of the key issues you might encounter and how to address them:
+
+### 1. **Security Concerns**
+- **Exposure to the Internet**: A public subnet means the EC2 instance will have a public IP address, making it accessible from the internet. This increases the risk of attacks.
+  - **Solution**: Use security groups to restrict access to the MySQL port (default is 3306) to only trusted IP addresses. Consider using a VPN or SSH tunneling for secure access.
+
+### 2. **Network Configuration**
+- **Security Groups**: Ensure that the security group associated with the EC2 instance allows inbound traffic on port 3306 from trusted IP addresses.
+  - **Solution**: Modify the security group rules to allow inbound traffic on port 3306 only from specific IP addresses or IP ranges.
+
+- **Network ACLs**: Ensure that network ACLs associated with the public subnet allow traffic on port 3306.
+  - **Solution**: Adjust network ACLs to permit inbound and outbound traffic on port 3306.
+
