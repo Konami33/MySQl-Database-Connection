@@ -102,6 +102,9 @@ For this guide, we will use an `Ubuntu` machine. Ubuntu is a popular Linux distr
 
 1. **Launch an EC2 Instance**: Go to the AWS Management Console, navigate to the EC2 dashboard, and launch an instance.
 2. **Select an AMI (Amazon Machine Image)**: Choose an Ubuntu AMI.
+
+![](./image/new.jpg)
+
 3. **Instance Type**: Select a free tier-eligible instance type such as `t2.micro` or `t3.micro`.
 4. **Configure Instance**:
     - Configure security groups to allow HTTP (port 80) and HTTPS (port 443) traffic.
