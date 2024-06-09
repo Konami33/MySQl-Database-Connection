@@ -45,7 +45,7 @@ Amazon Elastic Compute Cloud (EC2) is a service that provides scalable computing
 1. After creating your VPC, click on "Subnets" on the left-hand side.
 2. Click on "Create Subnet".
 
-   <!-- ![Create Subnet](image) -->
+   
    ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/Create-subnet.jpeg)
 
 3. Designate the VPC you just created.
@@ -53,14 +53,14 @@ Amazon Elastic Compute Cloud (EC2) is a service that provides scalable computing
 5. Click on the created subnet and then "Edit subnet settings".
 6. Enable "Auto-assign public IPv4 address" and save.
 
-   <!-- ![Enable Auto-assign IPv4](image) -->
+   
    ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/edit-subnet-settings.jpeg)
 
 ### Step 3: Create and Attach an Internet Gateway
 1. Click on "Internet Gateways" on the left-hand side.
 2. Click "Create internet gateway".
 
-   <!-- ![Create Internet Gateway](image) -->
+   
    ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/create-internet-gateway.jpeg)
 
 3. Once created, click "Actions" and then "Attach to VPC".
@@ -72,19 +72,19 @@ Amazon Elastic Compute Cloud (EC2) is a service that provides scalable computing
 1. Click on "Route Tables" on the left-hand side.
 2. Click "Create route table".
 
-   <!-- ![Create Route Table](image) -->
+   
    ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/Create-route-table.jpeg)
 
 3. Associate the new route table with your VPC.
 4. Add a route to allow internet traffic by specifying the destination `0.0.0.0/0` and target as your Internet Gateway.
 
-   <!-- ![Add Route](image) -->
+   
    ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/Edit-routes.jpeg)
 
 5. Click on the "Subnet Associations" tab, then "Edit Subnet Associations".
 6. Select your public subnet and save.
 
-   <!-- ![Associate Subnet](image) -->
+   
    ![alt text](https://github.com/Konami33/MySQl-Database-Connection/raw/flask-mysql-aws/EC2-Setup/images/edit-subnet-associations.jpeg)
 
 ### Resource Map:
@@ -96,27 +96,8 @@ Now we have our vpc setup.
 
 ## Setting Up the EC2 Instance
 
-### Choosing an OS Distribution
 
-For this guide, we will use an `Ubuntu` machine. Ubuntu is a popular Linux distribution known for its ease of use and extensive community support.
-
-### Creating an EC2 Instance
-
-1. **Launch an EC2 Instance**: Go to the AWS Management Console, navigate to the EC2 dashboard, and launch an instance.
-2. **Select an AMI (Amazon Machine Image)**: Choose an Ubuntu AMI.
-
-![](./image/new.jpg)
-
-3. **Instance Type**: Select a free tier-eligible instance type such as `t2.micro` or `t3.micro`.
-4. **Configure Instance**:
-    - Configure security groups to allow HTTP (port 80) and HTTPS (port 443) traffic.
-    - Create and assign an SSH key pair to securely access your instance.
-
-### Launch the Instance
-
-Review your settings and launch the instance. Once the instance is running, note the public IP address.
-
-## Allocating and Associating an Elastic IP
+<!-- ## Allocating and Associating an Elastic IP
 
 `Elastic IPs` are static IP addresses designed for dynamic cloud computing. They allow your instance to maintain the `same IP address` even after it is stopped and started.
 
@@ -129,9 +110,28 @@ Review your settings and launch the instance. Once the instance is running, note
     - Click "Actions" > "Associate Elastic IP address".
     - Choose your instance and private IP address to associate.
 
-![](./image/1.png)
+![](./image/1.png) -->
+## Setup K3s on AWS EC2
 
-## Accessing the EC2 Instance via SSH
+K3s is a lightweight Kubernetes distribution designed for resource-constrained environments.
+
+To set up a Kubernetes cluster using k3s on AWS with one master node and two worker nodes, follow these steps:
+
+### 1. Launch EC2 Instances:
+
+- Launch three EC2 instances:
+  - One for the master node.
+  - Two for the worker nodes.
+- Ensure that each instance has:
+  - an Ubuntu AMI.
+  - a free tier-eligible instance type (e.g., t2.micro or t3.micro)
+  - Sufficient resources based on your workload requirements.
+  - `Security groups` configured to allow necessary inbound and outbound traffic (including ports for k3s communication).
+  - `Public IP` addresses for the master and worker nodes if you need to access them from outside the VPC.
+
+![](./image/ec2-lnch.png)
+
+### 2. Accessing the EC2 Instance via SSH
 
 To set up K3s on your EC2 instance, you need to access it via SSH. There are two main ways to do this:
 
@@ -152,103 +152,58 @@ To set up K3s on your EC2 instance, you need to access it via SSH. There are two
 
 For simplification we will use the AWS EC2 Instance Connect. 
 
-## Installing K3s on AWS EC2
+### 3. Install k3s on Master Node:
 
-K3s is a lightweight Kubernetes distribution designed for resource-constrained environments.
+- Run the following command on the master node to install k3s:
+  ```bash
+  curl -sfL https://get.k3s.io | sh -
+  ```
+- After installation, the master node should become the control plane for your Kubernetes cluster.
 
-### Install K3s
+![](./image/master.png)
 
-1. **Run the Installation Command**:
+### 4. Test connectivity using PING or telnet
 
-    ```sh
-    curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644
-    ```
-![](./image/2.png)
+- Test the connectivity between the master node and the worker nodes using PING or telnet commands.
 
-2. **Verify the Installation**:
+- Ensure that the security groups allow the necessary traffic between the nodes.
 
-    ```sh
-    kubectl get nodes
-    # Or
-    kubectl cluster-info
-    ```
-![](./image/3.png)
+```sh
+ping <worker-1_node_ip>
+ping <worker-2_node_ip>
+```
+![](./image/ping.png)
 
-So we have installed k3s on AWS EC2.
+### 5. Join Worker Nodes to the Cluster:
+
+- Retrieve the token from the master node to join worker nodes:
+  ```bash
+  sudo cat /var/lib/rancher/k3s/server/node-token
+  ```
+![](./image/token.png)
+
+- Copy the token.
+
+- SSH into each worker node and run the following command to join it to the cluster (replace `<master-ip>` with the private IP of the master node and `<token>` with the token obtained earlier):
+  ```bash
+  curl -sfL https://get.k3s.io | K3S_URL=https://<master-ip>:6443 K3S_TOKEN=<token> sh -
+  ```
+
+![](./image/worker-1.1.png)
+
+### 6. Verify Cluster Setup:
+
+- SSH into the master node and verify that all nodes are part of the cluster:
+  ```bash
+  kubectl get nodes
+  ```
+- You should see the master node and both worker nodes listed as ready.
+
+![](./image/getnodes.png)
+
+So, we have configured master node and two worker node. Lets deploy some application in the kubenetes.
 
 ## Exaple task: Deploy a nginx web server on k3s kubenetes destribution.
-
-<!-- ## Dockerizing Your Application
-
-Docker is a platform for developing, shipping, and running applications inside containers.
-
-### Install Docker
-
-1. **Update and Install Docker**:
-
-    ```sh
-    sudo apt update -y && sudo apt install docker.io -y
-    ```
-
-2. **Add User to Docker Group**:
-
-    ```sh
-    sudo usermod -aG docker $USER
-    newgrp docker
-    ```
-
-### Create Application Directory and Files
-
-1. **Create Directory and Index File**:
-
-    ```sh
-    mkdir k3s-app
-    cd k3s-app
-    echo "<h1>Welcome to K3s Kubernetes Cluster on AWS EC2</h1>" > index.html
-    ```
-
-### Create Dockerfile
-
-1. **Dockerfile**:
-
-    ```Dockerfile
-    FROM nginx:alpine
-    COPY . /usr/share/nginx/html
-    ```
-
-### Build and Run Docker Image
-
-1. **Build Docker Image**:
-
-    ```sh
-    docker build -t your_dockerhub_username/k3s-app:latest .
-    ```
-
-2. **Run Docker Image**:
-
-    ```sh
-    docker run -d -p 3000:80 your_dockerhub_username/k3s-app:latest
-    ```
-
-3. **Update Security Group**: Ensure port 3000 is open in your security group settings.
-
-4. **Access Application**: Open the application in your browser using `http://your_elastic_ip:3000/`. -->
-
-<!-- ## Pushing the Docker Image to DockerHub
-
-DockerHub is a cloud-based registry service that allows you to link to code repositories, build your images, and test them.
-
-1. **Login to DockerHub**:
-
-    ```sh
-    docker login
-    ```
-
-2. **Push the Image**:
-
-    ```sh
-    docker push your_dockerhub_username/k3s-app:latest
-    ``` -->
 
 ## Creating a K3s Kubernetes Cluster
 
@@ -342,10 +297,10 @@ spec:
 
 ### Applying the Manifest
 
-Save this configuration to a file named `nginx-deployment.yaml` and apply it using the following command:
+Save this configuration to a file named `k3s-app.yml.yaml` and apply it using the following command:
 
 ```sh
-kubectl apply -f nginx-deployment.yaml
+kubectl apply -f k3s-app.yml.yaml
 ```
 
 ### Verify the Deployment
@@ -358,25 +313,27 @@ kubectl get services
 kubectl get ingress
 ```
 
-![](./image/9.png)
+![](./image/getall.png)
 
 
 ## Deploying Your Application
 
-To test the deployment, open your EC2 Elastic IP address in your browser. For example:
+To test the deployment, get the <node-ip>:
 
 ```sh
-http://your_elastic_ip/
+kubectl get nodes -o wide
 ```
+We can curl from the terminal using the node-ip:
 
-In our case `elastic_ip` is `3.231.129.241`
+```sh
+curl <node-ip>
+```
+![](./image/curl.png)
 
-![](./image/13.png)
+We can also check it from our browser. For example:
 
-You should see your application running, indicating that the deployment was successful.
-
-![](./image/11.png)
+![](./image/result.png)
 
 ---
 
-By following this documentation, you have successfully deployed a K3s Kubernetes cluster on AWS EC2 and run your application on it. This guide covers the setup of the EC2 instance, installation of K3s, Dockerizing and deploying an application, and configuring Kubernetes for production use.
+By following this documentation, we have successfully deployed a K3s Kubernetes cluster on AWS EC2 and run our application on it. This guide covers the setup of the EC2 instance, installation of K3s, Dockerizing and deploying an application, and configuring Kubernetes for production use.
