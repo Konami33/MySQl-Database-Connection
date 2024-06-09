@@ -137,6 +137,9 @@ This architecture ensures that the application and database are isolated yet can
    - Add rules to allow SSH (port 22) and HTTP (port 80) access.
      - Type: `SSH`, Protocol: `TCP`, Port Range: `22`, Source: `0.0.0.0/0` (Anywhere) or restrict as needed.
      - Type: `All traffic`, Protocol: `All`, Port Range: `All`, Source: `0.0.0.0/0` (Anywhere).
+
+    ![alt text](./images/inbound-rules.PNG)
+
    - Click **Review and Launch**.
 
 4. **Review and Launch:**
@@ -162,6 +165,9 @@ This architecture ensures that the application and database are isolated yet can
    - Add rules to allow SSH (port 22) and HTTP (port 80) access.
      - Type: `SSH`, Protocol: `TCP`, Port Range: `22`, Source: `0.0.0.0/0` (Anywhere) or restrict as needed.
      - Type: `All traffic`, Protocol: `All`, Port Range: `All`, Source: `0.0.0.0/0` (Anywhere).
+
+    ![alt text](./images/inbound-rules-flask.PNG)
+
    - Click **Review and Launch**.
 
 4. **Review and Launch:**
@@ -170,7 +176,12 @@ This architecture ensures that the application and database are isolated yet can
    - Click **View Instances** to see the status of your instance.
    - Click "Connect".
 
-## Summary
+## Resource Map
+
+![alt text](./images/final-4.png)
+
+![alt text](./images/final-5.png)
+
 You have now successfully created a VPC with the following components:
 - A VPC named `my-vpc`.
 - Two public subnets (`public-subnet-1` and `public-subnet-2`).
@@ -181,6 +192,119 @@ You have now successfully created a VPC with the following components:
     - `public-instance-1` in `public-subnet-1` with a public IP address.
     - `public-instance-2` in `public-subnet-2` with a public IP address.
 
+
+## Mysql Database Launch on EC2 Instance-1
+
+### Step 1: Update the package list and install Docker
+
+    Install and set up the docker in ubuntu EC2 instance.
+
+
+### Step 2: Create a database initialization script (init_db.sql)
+
+   ```sql
+   CREATE DATABASE IF NOT EXISTS test_db;
+   USE test_db;
+
+   CREATE TABLE IF NOT EXISTS users (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       name VARCHAR(50) NOT NULL,
+       email VARCHAR(50) NOT NULL
+   );
+   ```
+
+### Step 3: Create a docker-compose.yaml file
+
+   ```yaml
+   version: '3.8'
+
+   services:
+     db:
+       image: mysql:5.7
+       restart: always
+       environment:
+         MYSQL_ROOT_PASSWORD: root
+         MYSQL_USER: newuser
+         MYSQL_PASSWORD: newpass
+         MYSQL_DATABASE: test_db
+       volumes:
+         - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+       ports:
+         - "3306:3306"
+   ```
+
+### Step 4: Install Docker Compose
+
+1. **Download the Docker Compose binary**:
+
+   ```sh
+   sudo yum update -y
+   sudo yum install curl gnupg -y
+   sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+   ```
+
+2. **Apply executable permissions to the binary**:
+
+   ```sh
+   sudo chmod +x /usr/local/bin/docker-compose
+   ```
+
+3. **Verify the installation**:
+
+   ```sh
+   docker-compose --version
+   ```
+
+
+### Step 5: Build and Run Docker Containers
+
+1. **Build and run the containers**:
+
+   ```sh
+   sudo docker-compose up --build -d
+   ```
+   - `-d`: Runs the containers in detached mode, meaning they run in the background.
+
+### Step 7: Verify that the database and tables are set up correctly
+
+1. **Install MySQL client**:
+   ```sh
+   sudo apt-get update
+   sudo apt-get install mysql-client -y
+   ```
+
+2. **Get the MySQL Server container ID**:
+   ```sh
+   sudo docker ps
+   ```
+   - Look for the container ID of the MySQL service in the output.
+
+3. **Get the IP address of the MySQL container**:
+   ```sh
+   sudo docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <container_id>
+   ```
+   - Replace `<container_id>` with the actual container ID from the previous step.
+   - Note the IP address shown in the output.
+
+4. **Log in to MySQL**:
+   ```sh
+   mysql -h <container_ip> -u newuser -pnewpass test_db
+   ```
+   - Replace `<container_ip>` with the IP address obtained in the previous step.
+   - When prompted, enter the password `newpass`.
+
+5. **Verify the database and tables**:
+   ```sql
+   SHOW DATABASES;
+   USE test_db;
+   SHOW TABLES;
+   ```
+
+6. **Perform basic database operations**:
+   ```sql
+   INSERT INTO users (name, email) VALUES ('Jane Doe', 'jane@example.com');
+   SELECT * FROM users;
+   ```
 
 ## Flask Application Launch on EC2 Instance-2
 
@@ -319,12 +443,14 @@ docker-compose up
 
 This will build the Docker image and run the Flask application on port 5000.
 
-### 5. Obtain the IP Addresses
+## Testing the Connection
+
+### 1. Obtain the IP Addresses
 
 1. *Public IPs*: You can find the public IPs of both instances from the AWS Management Console under the EC2 Dashboard.
 2. *Private IPs*: Similarly, the private IPs can be found in the same section.
 
-### 6: Ping the Instances
+### 2. Ping the Instances
 
 #### From the MySQL Instance
 
@@ -358,7 +484,7 @@ This will build the Docker image and run the Flask application on port 5000.
 
 ![alt text](./images/final3.png)
 
-### 6. Testing the API
+## Testing the API
 
 1. **Check if the Flask API is running**:
 
@@ -398,3 +524,19 @@ This will build the Docker image and run the Flask application on port 5000.
 
    Expected Output:
     ![alt text](./images/final-1.png)
+
+7. **Check that Mysql Database Table is updating**:
+
+    Connect to your MySQL instance and check that the `users` table is being updated correctly.
+
+    ![alt text](./images/users-table.PNG)
+
+## Test Flask API from Web Browser
+
+1. Open your web browser and enter `http://<your-ec2-public-ip>:5000`.
+2. Verify the connection message confirming MySQL database access.
+3. Test endpoints by accessing `http://<your-ec2-public-ip>:5000/users`.
+
+Expected Output:
+
+![alt text](./images/final.png)
