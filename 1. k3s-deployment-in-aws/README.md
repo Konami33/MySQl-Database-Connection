@@ -25,7 +25,9 @@ Amazon Elastic Compute Cloud (EC2) is a service that provides scalable computing
 <details>
   <summary>Click to expand</summary>
 
-# AWS VPC and EC2 Setup Documentation
+# AWS VPC Setup Documentation
+
+![](./image/vpc-archi.png)
 
 ### Step 1: Create Your VPC
 1. **Open the AWS Management Console** and search for "VPC" in the search bar.
