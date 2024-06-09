@@ -102,6 +102,78 @@ This documentation outlines the process to set up a VPC with two public subnets,
    - Select `public-subnet-2`.
    - Click **Save associations**.
 
+### Step 7: Launch an EC2 Instance in Public Subnet 1
+
+1. **Launch an Instance:**
+   - Click on **Instances** in the navigation pane.
+   - Click **Launch Instances**.
+   - Choose an Amazon Machine Image (AMI). Search for "Ubuntu" and select the latest Ubuntu Server LTS AMI.
+   - Select an instance type, e.g., `t2.micro`.
+   - Click **Next: Configure Instance Details**.
+
+2. **Configure Instance Details:**
+   - **Network:** Select `my-vpc`.
+   - **Subnet:** Select `public-subnet-1`.
+   - **Auto-assign Public IP:** Enable.
+   - Click **Next: Add Storage**.
+
+3. **Add Storage:**
+   - Keep the default settings or customize the storage as needed.
+   - Click **Next: Add Tags**.
+
+4. **Add Tags:**
+   - Click **Add Tag**.
+   - Key: `Name`, Value: `public-instance-1`.
+   - Click **Next: Configure Security Group**.
+
+5. **Configure Security Group:**
+   - Select **Create a new security group**.
+   - Security group name: `public-sg-1`.
+   - Add rules to allow SSH (port 22) and HTTP (port 80) access.
+     - Type: `SSH`, Protocol: `TCP`, Port Range: `22`, Source: `0.0.0.0/0` (Anywhere) or restrict as needed.
+     - Type: `HTTP`, Protocol: `TCP`, Port Range: `80`, Source: `0.0.0.0/0` (Anywhere).
+   - Click **Review and Launch**.
+
+6. **Review and Launch:**
+   - Click **Launch**.
+   - Select an existing key pair or create a new key pair, then click **Launch Instances**.
+   - Click **View Instances** to see the status of your instance.
+   - Click "Connect".
+
+### Step 8: Launch an EC2 Instance in Public Subnet 2
+
+1. **Launch an Instance:**
+   - Launch another instance like **Step 7** above.
+
+2. **Configure Instance Details:**
+   - **Network:** Select `my-vpc`.
+   - **Subnet:** Select `public-subnet-2`.
+   - **Auto-assign Public IP:** Enable.
+   - Click **Next: Add Storage**.
+
+3. **Add Storage:**
+   - Keep the default settings or customize the storage as needed.
+   - Click **Next: Add Tags**.
+
+4. **Add Tags:**
+   - Click **Add Tag**.
+   - Key: `Name`, Value: `public-instance-2`.
+   - Click **Next: Configure Security Group**.
+
+5. **Configure Security Group:**
+   - Select **Create a new security group** or use an existing one.
+   - Security group name: `public-sg-2`.
+   - Add rules to allow SSH (port 22) and HTTP (port 80) access.
+     - Type: `SSH`, Protocol: `TCP`, Port Range: `22`, Source: `0.0.0.0/0` (Anywhere) or restrict as needed.
+     - Type: `HTTP`, Protocol: `TCP`, Port Range: `80`, Source: `0.0.0.0/0` (Anywhere).
+   - Click **Review and Launch**.
+
+6. **Review and Launch:**
+   - Click **Launch**.
+   - Select an existing key pair or create a new key pair, then click **Launch Instances**.
+   - Click **View Instances** to see the status of your instance.
+   - Click "Connect".
+
 ## Summary
 You have now successfully created a VPC with the following components:
 - A VPC named `my-vpc`.
@@ -109,5 +181,6 @@ You have now successfully created a VPC with the following components:
 - Two public route tables (`public-route-table-1` and `public-route-table-2`).
 - An internet gateway named `my-gateway` attached to the VPC.
 - Appropriate route configurations and subnet associations for routing internet traffic.
-
-This setup provides a foundation for deploying resources in a secure, scalable network within AWS.
+- You have successfully launched two Ubuntu EC2 instances in your VPC:
+    - `public-instance-1` in `public-subnet-1` with a public IP address.
+    - `public-instance-2` in `public-subnet-2` with a public IP address.
