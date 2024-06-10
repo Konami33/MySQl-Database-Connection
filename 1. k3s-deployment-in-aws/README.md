@@ -188,7 +188,6 @@ ping <worker-2_node_ip>
   ```bash
   curl -sfL https://get.k3s.io | K3S_URL=https://<master-ip>:6443 K3S_TOKEN=<token> sh -
   ```
-
 ![](./image/worker-1.1.png)
 
 ### 6. Verify Cluster Setup:
