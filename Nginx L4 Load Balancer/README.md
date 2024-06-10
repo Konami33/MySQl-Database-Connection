@@ -1,3 +1,6 @@
+# Deploy three EC2 instances, two hosting Flask applications, and one serving as an NGINX L4 load balancer
+
+
 To implement an L4 load balancer using NGINX for our Flask API servers on AWS EC2 instances, we can follow these steps:
 
 ![alt text](<./image/WhatsApp Image 2024-06-11 at 02.01.56_b0610b73.jpg>)
