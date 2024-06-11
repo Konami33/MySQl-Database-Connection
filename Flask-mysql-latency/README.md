@@ -265,6 +265,10 @@ mysql> SELECT * FROM users;
    }
    ```
 
+   Here is the output in my case:
+
+   ![alt text](image.png)
+
 ## Notes
 
 - **Database Configuration**: Ensure your MySQL database is running and accessible.
