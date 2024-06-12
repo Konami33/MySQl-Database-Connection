@@ -1,6 +1,6 @@
 # Flask MySQL Query Latency Measurement
 
-This guide will help you set up a Flask application to measure the latency of a MySQL query. 
+This document will help us set up a Flask application to measure the latency of a MySQL query. 
 
 ## Prerequisites
 
@@ -275,7 +275,3 @@ mysql> SELECT * FROM users;
 - **Timing the Query**: The `time.time()` function is used to measure the start and end times of the query execution.
 - **Error Handling**: If there's an error with the database connection or query execution, the application will return a JSON response with the error message and a 500 status code.
 - **Virtual Environment**: Using a virtual environment is recommended to manage dependencies and avoid conflicts with other projects.
-
----
-
-This documentation provides a step-by-step guide to set up and run a Flask application that measures the latency of a MySQL query. Follow the instructions carefully to ensure a successful setup.
