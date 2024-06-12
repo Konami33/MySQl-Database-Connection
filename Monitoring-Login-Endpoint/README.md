@@ -1,5 +1,7 @@
 # Monitoring Flask Application Login Endpoint with Prometheus and Grafana
 
+Prometheus actively extracts metrics from your Flask application by sending requests. It collects metrics from monitored targets by scraping HTTP endpoints at regular intervals. Grafana queries data from Prometheus and visualizes it in customizable dashboards. It supports multiple data sources, including Prometheus, allowing you to build complex and informative dashboards.
+
 To set up monitoring for the `/login` endpoint with status codes (200, 4XX) and latency using Prometheus and Grafana in a Python Flask application, follow these comprehensive steps:
 
 ## Step-by-Step Guide
@@ -197,4 +199,6 @@ For each panel, add the following PromQL queries:
 
 Open your Grafana dashboard to see the visualized metrics for the `/login` endpoint. You should see the counts for status codes 200 and 4XX, as well as the latency of the requests.
 
-By following these steps, you will have successfully set up monitoring for the `/login` endpoint using Prometheus and Grafana, allowing you to track status codes and latency metrics.
+## Conclusion
+
+By following these steps, you will have successfully set up monitoring for the `/login` endpoint using Prometheus and Grafana, enabling you to track status codes and latency metrics effectively. This setup provides a comprehensive solution for monitoring and analyzing the performance of your Flask application's login functionality.
