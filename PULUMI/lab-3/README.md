@@ -1,6 +1,6 @@
-## Lab 3: Launch EC2 Instances in Public and Private Subnets
+# Lab 3: Launch EC2 Instances in Public and Private Subnets
 
-### Introduction
+## Introduction
 
 In this lab, you will extend your VPC setup by launching EC2 instances in both the public and private subnets. Specifically, you will:
 
@@ -15,13 +15,13 @@ In this lab, you will extend your VPC setup by launching EC2 instances in both t
 
 By the end of this lab, you will have a fully functional VPC with EC2 instances in both the public and private subnets. The public instance will have direct Internet access, while the private instance will be isolated from direct Internet access, providing a secure environment for sensitive operations.
 
-### Architecture Diagram
+## Architecture Diagram
 
 Here is a visual representation of the architecture:
 
 ![alt text](image.png)
 
-### Step 1: Configure AWS CLI
+## Step 1: Configure AWS CLI
 
 1. **Configure AWS CLI**:
    - Open Command Prompt or PowerShell and run:
@@ -30,7 +30,7 @@ Here is a visual representation of the architecture:
      ```
    - Enter your AWS Access Key ID, Secret Access Key, default region (`us-east-1`), and default output format (`json`).
 
-### Step 2: Set Up a Pulumi Project
+## Step 2: Set Up a Pulumi Project
 
 1. **Set Up a Pulumi Project**:
    - Create a new directory for your project and navigate into it:
@@ -64,7 +64,7 @@ Here is a visual representation of the architecture:
      chmod 400 MyKeyPair.pem
      ```
 
-### Step 3: Create the Pulumi Program
+## Step 3: Create the Pulumi Program
 
 1. **Open `__main__.py`**:
    - Open the `__main__.py` file in your project directory.
@@ -244,7 +244,7 @@ Here is a visual representation of the architecture:
     pulumi.export("private_instance_id", private_instance.id)
     ```
 
-### Step 4: Deploy the Pulumi Stack
+## Step 4: Deploy the Pulumi Stack
 
 1. **Run Pulumi Up**:
    - Deploy the stack using:
@@ -253,7 +253,7 @@ Here is a visual representation of the architecture:
      ```
    - Review the changes and confirm by typing "yes".
 
-### Step 5: Verify the Deployment
+## Step 5: Verify the Deployment
 
 1. **Check the Outputs**:
    - After the deployment completes, you should see the exported VPC ID, public subnet ID, private subnet ID, NAT Gateway ID, and instance IDs in the output.
@@ -261,6 +261,6 @@ Here is a visual representation of the architecture:
 2. **Verify in AWS Management Console**:
    - Go to the [AWS Management Console](https://aws.amazon.com/console/) and navigate to the VPC, Subnet, Internet Gateway, NAT Gateway, and EC2 sections to verify that the resources have been created as expected.
 
-### Summary
+## Summary
 
 By following these steps, you will have set up a VPC with one public subnet, one private subnet, a public route table, a private route table, an Internet Gateway, and a NAT Gateway, and configured EC2 instances in both subnets using Pulumi and AWS CLI on Windows. This setup ensures that your public instance can communicate with the Internet, while your private instance remains isolated and uses the NAT Gateway for secure outbound connections. If you encounter any issues or need further assistance, feel free to ask!
