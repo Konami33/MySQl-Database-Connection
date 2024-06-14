@@ -235,7 +235,7 @@ This lab provides hands-on experience with AWS networking concepts and demonstra
             subnet_id=private_subnet.id,
             key_name="MyKeyPair"
         )
-        pulumi.export("private_instance_id", private_instance.id)
+    pulumi.export("private_instance_id", private_instance.id)
     ```
 ### Step 4: Deploy the Pulumi Stack
 
