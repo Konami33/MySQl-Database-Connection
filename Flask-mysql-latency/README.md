@@ -1,4 +1,4 @@
-# Flask MySQL Query Latency Measurement
+# Flask MySQL Query Latency Measurement Using Prometheus and Grafana
 
 This document will help us set up a Flask application to measure the latency of a MySQL query. 
 
