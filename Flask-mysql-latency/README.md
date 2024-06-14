@@ -1,12 +1,12 @@
-# Flask MySQL Query Latency Measurement
+# Flask MySQL Query Latency Measurement Using Prometheus and Grafana
 
 This document will help us set up a Flask application to measure the latency of a MySQL query. 
 
 ## Prerequisites
-
-- Python installed on your system.
-- MySQL database installed and running.
+- Python and pip installed on your system.
 - Flask and MySQL connector libraries installed.
+- MySQL server installed and running.
+- Prometheus and Grafana installed and running.
 
 ## Start MySQL container in Docker
 
@@ -56,6 +56,8 @@ Enter the root password you set earlier when prompted.
 Use the following commands to create table:
 
 ```sql
+USE my_db;
+
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE users (
@@ -124,154 +126,141 @@ mysql> SELECT * FROM users;
 
 ```
 
+## Setup Flask App
+
+### Setup virtual environment:
+```bash
+python -m venv venv
+venv/Scripts/activate
+```
+
+### Install required packages
+
+```bash
+pip install Flask prometheus_client mysql-connector-python
+```
+
+### Create the Flask app (app.py)
+
+```python
+from flask import Flask
+import mysql.connector
+import time
+from prometheus_client import start_http_server, Summary
+from prometheus_client import Counter, generate_latest
+
+app = Flask(__name__)
+
+# Create a metric to track time spent and requests made
+REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing request')
+REQUEST_COUNTER = Counter('request_processing_count', 'Number of requests processed')
+
+@app.route('/metrics')
+def metrics():
+    return generate_latest()
+
+def get_db_connection():
+    connection = mysql.connector.connect(
+        host='localhost',
+        user='root',
+        password='root',
+        database='my_db'
+    )
+    return connection
+
+@REQUEST_TIME.time()
+@app.route('/')
+def query():
+    start_time = time.time()
+    REQUEST_COUNTER.inc()
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users")
+    result = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    end_time = time.time()
+    latency = end_time - start_time
+    REQUEST_TIME.observe(latency)
+    return f"Query latency: {latency} seconds. Result: {result}"
+
+if __name__ == '__main__':
+    # Start up the server to expose the metrics.
+    start_http_server(8000)
+    # Run the Flask app
+    app.run(port=5000)
+
+```
+
+### Run the Flask app
+
+```bash
+python app.py
+```
 
 
-## Installation
 
-1. **Clone the repository (if applicable) or create a new project directory:**
+## Set Up Prometheus
 
-   ```bash
-   mkdir flask-mysql-latency
-   cd flask-mysql-latency
-   ```
+### Configure Prometheus (prometheus.yml)
+Create or modify the Prometheus configuration file to scrape the Flask application's metrics endpoint.
 
-2. **Create a virtual environment (optional but recommended):**
+```yml
+global:
+  scrape_interval: 15s
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   ```
+scrape_configs:
+  - job_name: 'flask_app'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['localhost:8000']
+```
 
-3. **Install the required Python packages:**
+### Run Prometheus
 
-   ```bash
-   pip install flask mysql-connector-python
-   ```
+```bash
+./prometheus --config.file=prometheus.yml
+```
 
+## Set Up Grafana
 
+### Configure Grafana
 
+- Open Grafana in your web browser (default: http://localhost:3000).
+- Log in (default credentials: admin/admin).
 
+### Add Prometheus as a data source:
 
+- Go to Configuration -> Data Sources -> Add data source.
+- Select Prometheus.
+- Set the URL to http://localhost:9090 (default Prometheus address).
+- Click Save & Test.
 
-## Configuration
+### Create a Dashboard
+- Go to Create -> Dashboard.
+- Add a new panel.
+- In the panel configuration, select Prometheus as the data source.
+- Use the metric request_processing_seconds to visualize the latency.
 
-1. **Create a file named `config.py` and add your MySQL database configuration:**
+## Varification
 
-   ```python
-   # config.py
-   DB_CONFIG = {
-       'user': 'your_username',
-       'password': 'your_password',
-       'host': 'localhost',
-       'database': 'your_database'
-   }
-   ```
-   
-   In my case I am using root user and password:
-
-    ```python
-   # config.py
-   DB_CONFIG = {
-       'user': 'root',
-       'password': 'root',
-       'host': 'localhost',
-       'database': 'your_database'
-   }
-   ```
+### Make a few requests to the Flask app
+- Open http://localhost:5000 in browser.
 
 
-2. **Replace `your_username`, `your_password`, `localhost`, and `your_database` with your actual MySQL credentials.**
+### Check Prometheus
+- Open http://localhost:9090 in your browser.
+- Query request_processing_seconds to verify that the metrics are being scraped.
 
-## Implementation
+### Check Grafana
+- Open your Grafana dashboard.
+- Ensure that the panel displays the latency of the MySQL queries.
 
-1. **Create a file named `app.py` and add the following code:**
+Expected results:
 
-   ```python
-   # app.py
-   from flask import Flask, jsonify
-   import mysql.connector
-   import time
-   from config import DB_CONFIG
+![alt text](<./img1.jpg>)
 
-   app = Flask(__name__)
-
-   @app.route('/')
-   def query_latency():
-       try:
-           # Connect to the MySQL database
-           conn = mysql.connector.connect(**DB_CONFIG)
-           cursor = conn.cursor()
-
-           # Start timing
-           start_time = time.time()
-
-           # Execute the query
-           cursor.execute("SELECT * FROM users")
-
-           # Fetch the results (optional, depending on what you want to measure)
-           results = cursor.fetchall()
-
-           # End timing
-           end_time = time.time()
-
-           # Calculate latency
-           latency = end_time - start_time
-
-           # Close the cursor and connection
-           cursor.close()
-           conn.close()
-
-           return jsonify({
-               'latency': latency,
-               'results': results  # You can remove this if you don't want to return the results
-           })
-
-       except mysql.connector.Error as err:
-           return jsonify({'error': str(err)}), 500
-
-   if __name__ == '__main__':
-       app.run(debug=True)
-   ```
+![alt text](<./img2.jpg>)
 
 
-## Running the Application
-
-1. **Run the Flask application:**
-
-   ```bash
-   python app.py
-   ```
-
-2. **You should see output indicating that the Flask server is running:**
-
-   ```
-   * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
-   ```
-
-## Testing the Endpoint
-
-1. **Open a web browser or use a tool like `curl` or Postman to test the endpoint:**
-
-   ```bash
-   http://127.0.0.1:5000/
-   ```
-
-2. **You should receive a JSON response with the query latency:**
-
-   ```json
-   {
-       "latency": 0.123456,
-       "results": [...]
-   }
-   ```
-
-   Here is the output in my case:
-
-   ![alt text](image.png)
-
-## Notes
-
-- **Database Configuration**: Ensure your MySQL database is running and accessible.
-- **Timing the Query**: The `time.time()` function is used to measure the start and end times of the query execution.
-- **Error Handling**: If there's an error with the database connection or query execution, the application will return a JSON response with the error message and a 500 status code.
-- **Virtual Environment**: Using a virtual environment is recommended to manage dependencies and avoid conflicts with other projects.
+By following these steps, you will have a fully functioning monitoring setup for the latency of MySQL queries in a Flask application using Prometheus and Grafana without using Docker containers.
