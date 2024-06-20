@@ -2,7 +2,7 @@
 
 This guide provides a comprehensive step-by-step process to automate MySQL database backups on an AWS EC2 instance, store them in an S3 bucket, and send a notification via WhatsApp using Twilio. In this document, we’ll walk through the process of automating MySQL database backups on an AWS EC2 instance and storing them in an S3 bucket. This setup will ensure that our data is backed up regularly and securely.
 
-![alt text](./images/backup.PNG)
+![alt text](https://raw.githubusercontent.com/Konami33/MySQl-Database-Connection/flask-mysql-aws/MySql-backup/images/backup.PNG)
 
 ## Prerequisites
 
@@ -22,7 +22,7 @@ Create a vpc and Launch an EC2 instance for running the mysql.
    - Click "Create bucket" and follow the prompts.
    - Make sure versioning is enabled as going forward we have to apply lifecycle policy on our bucket.
 
-   ![alt text](./images/bucket-versioning.PNG)
+   ![alt text](https://raw.githubusercontent.com/Konami33/MySQl-Database-Connection/flask-mysql-aws/MySql-backup/images/bucket-versioning.PNG)
    
 2. **Create a Lifecycle Rule**:
    - Navigate to the bucket's "Management" tab.
@@ -33,7 +33,7 @@ Create a vpc and Launch an EC2 instance for running the mysql.
 
 Click create rule and it’s done.
 
-![alt text](./images/lifecycle-rule.PNG)
+![alt text](https://raw.githubusercontent.com/Konami33/MySQl-Database-Connection/flask-mysql-aws/MySql-backup/images/lifecycle-rule.PNG)
 
 ## Step 3: Attach an IAM Role to the EC2 Instance
 
@@ -42,7 +42,7 @@ Let’s create an IAM role with the necessary permissions for EC2 to write to ou
 1. **Create an IAM Role**:
    - Go to the IAM console and create a new role.
 
-     ![alt text](./images/role.PNG)
+     ![alt text](https://raw.githubusercontent.com/Konami33/MySQl-Database-Connection/flask-mysql-aws/MySql-backup/images/role.PNG)
 
    - Attach the following policy:
 
@@ -68,7 +68,7 @@ Let’s create an IAM role with the necessary permissions for EC2 to write to ou
 
    Replace ``your-bucket-name`` with your bucket name.
 
-   ![alt text](./images/policy.PNG)
+   ![alt text](https://raw.githubusercontent.com/Konami33/MySQl-Database-Connection/flask-mysql-aws/MySql-backup/images/policy.PNG)
 
 2. **Attach the Role to EC2**:
    - Attach the created IAM role to the EC2 instance in the security and now our server will be able to communicate with the created S3 bucket.
@@ -301,7 +301,7 @@ To ensure everything is set up correctly execute the following steps:
    ./backup_script.sh
    ```
 
-   ![alt text](./images/wapp-01.PNG)
+   ![alt text](https://raw.githubusercontent.com/Konami33/MySQl-Database-Connection/flask-mysql-aws/MySql-backup/images/wapp-01.PNG)
 
 2. **Check Logs**:
    Verify the cron logs:
@@ -310,17 +310,17 @@ To ensure everything is set up correctly execute the following steps:
    grep CRON /var/log/syslog
    ```
 
-   ![alt text](./images/backup-log.PNG)
+   ![alt text](https://raw.githubusercontent.com/Konami33/MySQl-Database-Connection/flask-mysql-aws/MySql-backup/images/backup-log.PNG)
 
 3. **Check WhatsApp**:
    Ensure you receive the WhatsApp notification on the specified number.
 
-   ![alt text](./images/wapp-02.PNG)
+   ![alt text](https://raw.githubusercontent.com/Konami33/MySQl-Database-Connection/flask-mysql-aws/MySql-backup/images/wapp-02.PNG)
 
 4. **Check S3 Bucket**:
    Verify the backup file is uploaded to the S3 bucket.
 
-   ![alt text](./images/wapp-03.PNG)
+   ![alt text](https://raw.githubusercontent.com/Konami33/MySQl-Database-Connection/flask-mysql-aws/MySql-backup/images/wapp-03.PNG)
 
 We can see that our script has been executed successfully and has pushed the MySQL backup dump into our S3 bucket.
 
